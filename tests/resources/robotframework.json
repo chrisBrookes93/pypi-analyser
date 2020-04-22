@@ -1,0 +1,171 @@
+{
+    "info": {
+        "maintainer": "Pekka Klrck",
+        "docs_url": null, 
+        "requires_python": "", 
+        "maintainer_email": "peke@eliga.fi",
+        "keywords": "robotframework automation testautomation rpa testing acceptancetesting atdd bdd", 
+        "package_url": "https://pypi.org/project/robotframework/", 
+        "author": "Pekka Klrck",
+        "author_email": "peke@eliga.fi", 
+        "download_url": "https://pypi.python.org/pypi/robotframework", 
+        "project_urls": {
+            "Download": "https://pypi.python.org/pypi/robotframework", 
+            "Homepage": "http://robotframework.org"
+        }, 
+        "platform": "any", 
+        "version": "3.1.2", 
+        "description": "Robot Framework\n===============\n\n.. contents::\n   :local:\n\nIntroduction\n------------\n\n`Robot Framework <http://robotframework.org>`_ is a generic open source\nautomation framework for acceptance testin", 
+        "release_url": "https://pypi.org/project/robotframework/3.1.2/", 
+        "description_content_type": "", 
+        "downloads": {
+            "last_month": -1, 
+            "last_week": -1, 
+            "last_day": -1
+        }, 
+        "requires_dist": null, 
+        "project_url": "https://pypi.org/project/robotframework/", 
+        "classifiers": [
+            "Development Status :: 5 - Production/Stable", 
+            "Framework :: Robot Framework", 
+            "License :: OSI Approved :: Apache Software License", 
+            "Operating System :: OS Independent", 
+            "Programming Language :: Python :: 2", 
+            "Programming Language :: Python :: 2.7", 
+            "Programming Language :: Python :: 3", 
+            "Programming Language :: Python :: 3.4", 
+            "Programming Language :: Python :: 3.5", 
+            "Programming Language :: Python :: 3.6", 
+            "Programming Language :: Python :: 3.7", 
+            "Programming Language :: Python :: Implementation :: CPython", 
+            "Programming Language :: Python :: Implementation :: IronPython", 
+            "Programming Language :: Python :: Implementation :: Jython", 
+            "Programming Language :: Python :: Implementation :: PyPy", 
+            "Topic :: Software Development :: Testing", 
+            "Topic :: Software Development :: Testing :: Acceptance", 
+            "Topic :: Software Development :: Testing :: BDD"
+        ], 
+        "bugtrack_url": null, 
+        "name": "robotframework", 
+        "license": "Apache License 2.0", 
+        "summary": "Generic automation framework for acceptance testing and robotic process automation (RPA)", 
+        "home_page": "http://robotframework.org"
+    }, 
+    "last_serial": 6945345, 
+    "urls": [
+        {
+            "has_sig": false, 
+            "upload_time": "2019-05-24T08:12:42", 
+            "comment_text": "robotframework",
+            "python_version": "py2.py3", 
+            "url": "https://files.pythonhosted.org/packages/22/0f/1b9ffa0c4e59789b50e6034866e823b7d4a5c7eaedad7bfd0bba42f2aa9d/robotframework-3.1.2-py2.py3-none-any.whl", 
+            "md5_digest": "839fc9405423a10cf5c31ae0fcfe427c", 
+            "downloads": -1, 
+            "requires_python": null,
+            "filename": "robotframework-3.1.2-py2.py3-none-any.whl", 
+            "packagetype": "bdist_wheel", 
+            "upload_time_iso_8601": "2019-05-24T08:12:42.934052Z", 
+            "digests": {
+                "sha256": "cc4b04f711677c94c7d1e30ef1e5cdd50c0b731f8038d6214379c3def183c7f0", 
+                "md5": "839fc9405423a10cf5c31ae0fcfe427c"
+            }, 
+            "size": 602146
+        }, 
+        {
+            "has_sig": false, 
+            "upload_time": "2019-05-24T08:12:47", 
+            "comment_text": "robotframework",
+            "python_version": "source", 
+            "url": "https://files.pythonhosted.org/packages/6c/04/2aee0fb807e14d2f2463217f81ac94c542b5b0c5809a7535f284a0bbb05c/robotframework-3.1.2.zip", 
+            "md5_digest": "2dcf268e7551d8eecc8e7948518703c1", 
+            "downloads": -1, 
+            "requires_python": null, 
+            "filename": "robotframework-3.1.2.zip", 
+            "packagetype": "sdist", 
+            "upload_time_iso_8601": "2019-05-24T08:12:47.740413Z", 
+            "digests": {
+                "sha256": "f10dd7c0c8c7962a4f80dd1e026b5db731b9391bc6e1f9ebb96d685eb1230dbc", 
+                "md5": "2dcf268e7551d8eecc8e7948518703c1"
+            }, 
+            "size": 638394
+        }
+    ], 
+    "releases": {
+        "3.2rc1": [
+            {
+                "has_sig": true,
+                "upload_time": "2020-04-03T18:49:29", 
+                "comment_text": "robotframework",
+                "python_version": "py2.py3", 
+                "url": "https://files.pythonhosted.org/packages/41/a4/fb508058d72b07b5264e175e3f1943b45ec2ccdfc66a672d121b3cf64542/robotframework-3.2rc1-py2.py3-none-any.whl", 
+                "md5_digest": "58780c0b23b6aedaf10a12b03d14221a", 
+                "downloads": -1, 
+                "requires_python": ">=2.7",
+                "filename": "robotframework-3.2rc1-py2.py3-none-any.whl", 
+                "packagetype": "bdist_wheel", 
+                "upload_time_iso_8601": "2020-04-03T18:49:29.892892Z", 
+                "digests": {
+                    "sha256": "21c880c577ecf21795b083f52dc094e4a3d83eedeadcb5e5926494e689f23631", 
+                    "md5": "58780c0b23b6aedaf10a12b03d14221a"
+                }, 
+                "size": 613098
+            }, 
+            {
+                "has_sig": true,
+                "upload_time": "2020-04-03T18:49:33", 
+                "comment_text": "robotframework",
+                "python_version": "source", 
+                "url": "https://files.pythonhosted.org/packages/02/dc/773ca3480977596f4ae43b98a539cbbc85a0c14745cfada1bd866345be1a/robotframework-3.2rc1.zip", 
+                "md5_digest": "6bbadd96485e3eb81c80c0f388529535", 
+                "downloads": -1, 
+                "requires_python": null, 
+                "filename": "robotframework-3.2rc1.zip", 
+                "packagetype": "sdist", 
+                "upload_time_iso_8601": "2020-04-03T18:49:33.705752Z", 
+                "digests": {
+                    "sha256": "ff6ac8ddb054e1e50d12a2728a855cac3c4462d95d8aaf42fc321f34468e5fc0", 
+                    "md5": "6bbadd96485e3eb81c80c0f388529535"
+                }, 
+                "size": 647126
+            }
+        ], 
+        "3.2b2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2020-02-14T10:16:11", 
+                "comment_text": "robotframework",
+                "python_version": "py2.py3", 
+                "url": "https://files.pythonhosted.org/packages/e5/a3/ef5738bd0e2c2532eadfeeec15e1b5e1b7be866b9a4805113f4b2fd06349/robotframework-3.2b2-py2.py3-none-any.whl", 
+                "md5_digest": "627c58f83dd25abb3350bd924bf66728", 
+                "downloads": -1, 
+                "requires_python": null, 
+                "filename": "robotframework-3.2b2-py2.py3-none-any.whl", 
+                "packagetype": "bdist_wheel", 
+                "upload_time_iso_8601": "2020-02-14T10:16:11.756394Z", 
+                "digests": {
+                    "sha256": "0595d56630979e6f8f3d56adb91a0c7e81b6cd38d505bde1f714af92fad3f3db", 
+                    "md5": "627c58f83dd25abb3350bd924bf66728"
+                }, 
+                "size": 609083
+            }, 
+            {
+                "has_sig": false, 
+                "upload_time": "2020-02-14T10:16:14", 
+                "comment_text": "robotframework",
+                "python_version": "source", 
+                "url": "https://files.pythonhosted.org/packages/9d/81/56b08ea5d142c103abac02d9cddfed6119eceb9134a0a6b00284d4373c69/robotframework-3.2b2.zip", 
+                "md5_digest": "6290cd1217df095fe8b3dd1bf6024524", 
+                "downloads": -1, 
+                "requires_python": null, 
+                "filename": "robotframework-3.2b2.zip", 
+                "packagetype": "sdist", 
+                "upload_time_iso_8601": "2020-02-14T10:16:14.640963Z", 
+                "digests": {
+                    "sha256": "5d5431e33e112c60101a46f073dec7ffa2e91747e95fb0af9a6dc0012f917fd3", 
+                    "md5": "6290cd1217df095fe8b3dd1bf6024524"
+                }, 
+                "size": 642901
+            }
+        ]
+    }
+}

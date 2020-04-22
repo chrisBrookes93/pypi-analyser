@@ -1,0 +1,82 @@
+{
+    "info": {
+        "maintainer": "", 
+        "docs_url": null, 
+        "requires_python": "", 
+        "maintainer_email": "", 
+        "keywords": "", 
+        "package_url": "https://pypi.org/project/robotframework-remoterunner/", 
+        "author": "Chris Brookes", 
+        "author_email": "", 
+        "download_url": "https://github.com/chrisBrookes93/robotframework-remoterunner/archive/1.0.1.tar.gz", 
+        "project_urls": {
+            "Download": "https://github.com/chrisBrookes93/robotframework-remoterunner/archive/1.0.1.tar.gz", 
+            "Homepage": "https://github.com/chrisBrookes93/robotframework-remotrunner"
+        }, 
+        "platform": "", 
+        "version": "1.0.1", 
+        "description": "# Robot Framework Remote Runner\n\n[![Build Status](https://gitlab.com/chrisBrookes93/robotframework-remoterunner/badges/develop/pipeline.svg)](https://gitlab.com/chrisBrookes93/robotframework-remoterun", 
+        "release_url": "https://pypi.org/project/robotframework-remoterunner/1.0.1/", 
+        "description_content_type": "text/markdown", 
+        "downloads": {
+            "last_month": -1, 
+            "last_week": -1, 
+            "last_day": -1
+        }, 
+        "requires_dist": null, 
+        "project_url": "https://pypi.org/project/robotframework-remoterunner/", 
+        "classifiers": [
+            "License :: OSI Approved :: MIT License", 
+            "Operating System :: OS Independent", 
+            "Programming Language :: Python :: 2.7"
+        ], 
+        "bugtrack_url": null, 
+        "name": "robotframework-remoterunner", 
+        "license": "", 
+        "summary": "This library provides a robotframework slave, and accompanying robot executor script that allows you to run Robot Framework Test Suites remotely. It's designed to be a lightweight agent and can be use", 
+        "home_page": "https://github.com/chrisBrookes93/robotframework-remotrunner"
+    }, 
+    "last_serial": 6743901, 
+    "urls": [
+        {
+            "has_sig": false, 
+            "upload_time": "2020-03-03T22:29:01", 
+            "comment_text": "", 
+            "python_version": "source", 
+            "url": "https://files.pythonhosted.org/packages/ac/d6/4642b8af96917fd4a586d28f12bc10d2b978aa9fe5b384c6988eb2c37c0d/robotframework-remoterunner-1.0.1.tar.gz", 
+            "md5_digest": "9465ed577e3ae9b29fa5ba429d0d1db2", 
+            "downloads": -1, 
+            "requires_python": null, 
+            "filename": "robotframework-remoterunner-1.0.1.tar.gz", 
+            "packagetype": "sdist", 
+            "upload_time_iso_8601": "2020-03-03T22:29:01.404004Z", 
+            "digests": {
+                "sha256": "fd6a1f77f0fe0fca4fe4e1d9b141592513255fb10f5c77d4fe479e253eadbf78", 
+                "md5": "9465ed577e3ae9b29fa5ba429d0d1db2"
+            }, 
+            "size": 12996
+        }
+    ], 
+    "releases": {
+        "1.0.1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2020-03-03T22:29:01", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://files.pythonhosted.org/packages/ac/d6/4642b8af96917fd4a586d28f12bc10d2b978aa9fe5b384c6988eb2c37c0d/robotframework-remoterunner-1.0.1.tar.gz", 
+                "md5_digest": "9465ed577e3ae9b29fa5ba429d0d1db2", 
+                "downloads": -1, 
+                "requires_python": null, 
+                "filename": "robotframework-remoterunner-1.0.1.tar.gz", 
+                "packagetype": "sdist", 
+                "upload_time_iso_8601": "2020-03-03T22:29:01.404004Z", 
+                "digests": {
+                    "sha256": "fd6a1f77f0fe0fca4fe4e1d9b141592513255fb10f5c77d4fe479e253eadbf78", 
+                    "md5": "9465ed577e3ae9b29fa5ba429d0d1db2"
+                }, 
+                "size": 12996
+            }
+        ]
+    }
+}
