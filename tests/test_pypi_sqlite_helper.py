@@ -1,7 +1,7 @@
 import unittest
 import os
 import json
-from PyPi_Py3_Analyser.sqlite_helpers import PyPiAnalyserSqliteHelper
+from pypianalyser.sqlite_helpers import PyPiAnalyserSqliteHelper
 
 
 class PyPiAnalyserSqliteHelperTests(unittest.TestCase):

@@ -5,7 +5,7 @@ import json
 import logging
 from distutils.version import LooseVersion
 from collections import OrderedDict
-from PyPi_Py3_Analyser.exceptions import Exception404
+from pypianalyser.exceptions import Exception404
 
 logger = logging.getLogger(__file__)
 

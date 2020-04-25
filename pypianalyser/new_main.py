@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 from io import open
-from pypi_metadata_retriever import PyPiMetadataRetriever
+from pypianalyser.pypi_metadata_retriever import PyPiMetadataRetriever
 
 logging.basicConfig(format='%(message)s', level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__file__)
@@ -27,8 +27,8 @@ if __name__ == '__main__':
                         help='Name or path of the database to store the metadata in. If the database already exists '
                              'with entries then it will be read and only packages that are missing from the database '
                              'will be retrieved. This allows you to download the PyPi mirror metadata over a few runs '
-                             'rather than a single one. Default is pypi_metadata.json',
-                        default='pypi_metadata.json')
+                             'rather than a single one. Default is pypi_metadata.sqlite',
+                        default='pypi_metadata.sqlite')
     parser.add_argument('-m', '--max_packages',
                         help='Maximum number of packages to retrieve the metadata for. Using this allows you download'
                              ' the metadata over a series of runs rather than spamming PyPi and your network.',

@@ -1,7 +1,7 @@
-from sql_queries import CREATE_TABLE_SQL_QUERIES, INSERT_PACKAGE_SQL, INSERT_CLASSIFIER_STRING_SQL, \
+from pypianalyser.sql_queries import CREATE_TABLE_SQL_QUERIES, INSERT_PACKAGE_SQL, INSERT_CLASSIFIER_STRING_SQL, \
     INSERT_PACKAGE_CLASSIFIER_SQL, INSERT_PACKAGE_RELEASES_SQL, SELECT_ID_FOR_CLASSIFIER_STRING_SQL, \
     SELECT_CLASSIFIERS_FOR_PACKAGE_SQL
-from utils import order_dict_by_key_name
+from pypianalyser.utils import order_dict_by_key_name
 from sqlite3worker import Sqlite3Worker
 
 

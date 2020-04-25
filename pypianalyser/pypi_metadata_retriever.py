@@ -3,9 +3,9 @@ import os
 import re
 import threading
 import time
-from sqlite_helpers import PyPiAnalyserSqliteHelper
-from pypi_index_helpers import get_package_list, get_metadata_for_package
-from exceptions import Exception404
+from pypianalyser.sqlite_helpers import PyPiAnalyserSqliteHelper
+from pypianalyser.pypi_index_helpers import get_package_list, get_metadata_for_package
+from pypianalyser.exceptions import Exception404
 
 logger = logging.getLogger(__file__)
 
@@ -48,6 +48,7 @@ class PyPiMetadataRetriever:
         self._progress_counter_lock = threading.Lock()
         self._progress_counter = 0
         self._start_time = 0
+        self._shutdown = False
 
         # Initialize the connection to the DB
         self._db_helper = PyPiAnalyserSqliteHelper(db_path)
@@ -129,6 +130,8 @@ class PyPiMetadataRetriever:
         update_period = min(5000, len(package_list) / 10)
 
         for package in package_list:
+            if self._shutdown:
+                break
             try:
                 logger.info('Processing: {}'.format(package))
                 metadata = get_metadata_for_package(package, self.truncate_description, self.truncate_releases)
