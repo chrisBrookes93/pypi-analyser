@@ -19,7 +19,7 @@ import logging
 import threading
 import os
 
-from python_index_helpers import get_package_metadata, get_package_list
+from python_index_helpers import get_metadata_for_package, get_package_list
 from sqlite_helpers import PyPiAnalyserSqliteHelper
 from PyPi_Py3_Analyser.exceptions import Exception404
 
@@ -69,7 +69,7 @@ def process_package_list(package_list, db_helper):
     for package in package_list:
         try:
             print package
-            metadata = get_package_metadata(package, truncate_description=100, truncate_releases=1)
+            metadata = get_metadata_for_package(package, truncate_description=100, truncate_releases=1)
             if metadata:
                 db_helper.commit_package_to_db(metadata)
         except Exception404, e:

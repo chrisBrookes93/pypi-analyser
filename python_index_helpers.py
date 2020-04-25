@@ -39,8 +39,8 @@ def get_json_blob_for_package(package_name, url_format='https://pypi.org/pypi/{}
     return json.loads(response.content)
 
 
-def get_package_metadata(package_name, url_format='https://pypi.org/pypi/{}/json', truncate_description=None,
-                         truncate_releases=None):
+def get_metadata_for_package(package_name, url_format='https://pypi.org/pypi/{}/json', truncate_description=None,
+                             truncate_releases=None):
     """
     Download the metadata for a given package and optionally description and the releases dictionary. The description is
     often the largest part of the metadata and can be truncated to save space. This limit is also applied to the
