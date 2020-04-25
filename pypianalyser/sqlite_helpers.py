@@ -1,8 +1,8 @@
+from sqlite3worker import Sqlite3Worker
 from pypianalyser.sql_queries import CREATE_TABLE_SQL_QUERIES, INSERT_PACKAGE_SQL, INSERT_CLASSIFIER_STRING_SQL, \
     INSERT_PACKAGE_CLASSIFIER_SQL, INSERT_PACKAGE_RELEASES_SQL, SELECT_ID_FOR_CLASSIFIER_STRING_SQL, \
-    SELECT_CLASSIFIERS_FOR_PACKAGE_SQL
-from pypianalyser.utils import order_dict_by_key_name
-from sqlite3worker import Sqlite3Worker
+    SELECT_CLASSIFIERS_FOR_PACKAGE_SQL, PACKAGE_TABLE_COLUMNS, PACKAGE_RELEASES_TABLE_COLUMNS
+from pypianalyser.utils import order_dict_by_key_name, remove_unknown_keys_from_dict, normalize_package_name
 
 
 class SQLiteHelper(object):
@@ -72,19 +72,21 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
         :return: Primary key ID of the entry added to the packages table
         :rtype int
         """
+        package_info['name'] = normalize_package_name(package_info['name'])
         # Classifiers will go into their own table so remove here
         classifiers = package_info.pop('classifiers')
         # For simplicity concat project urls and store in one field
         project_urls = package_info['project_urls'].items() if package_info['project_urls'] else []
         package_info['project_urls'] = u', '.join([u'{}: {}'.format(k, v) for k, v in project_urls])
 
-        # downloads field is not used, remove this
-        package_info.pop('downloads')
-
         # Join this field for simplicity
         requires_dist = package_info['requires_dist']
         if requires_dist:
             package_info['requires_dist'] = ', '.join(requires_dist)
+
+        # PyPi added a field 'yanked' during development of this. Remove any fields we don't recognise/use so that we
+        # don't encounter any database issues
+        remove_unknown_keys_from_dict(package_info, PACKAGE_TABLE_COLUMNS)
 
         # Order the dictionary alphabetically by key name. We need to do this so that we get an ordered tuple
         ordered_package_info = order_dict_by_key_name(package_info)
@@ -103,10 +105,7 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
         # A release may have multiple files and therefore 'release' is a list. To simplify the DB, treat each one as a
         # release, they can be retrieved easily because they're have the same release version field.
         for release_file in release:
-            # Drop the digests to save space
-            release_file.pop('digests')
-            # The 'downloads' field is unused so remove this as well
-            release_file.pop('downloads')
+            remove_unknown_keys_from_dict(release_file, PACKAGE_RELEASES_TABLE_COLUMNS)
 
             # Add in the package_id (foreign key for packages table)
             # Add in the release name (version string)
@@ -157,6 +156,7 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
 
         return [x[0] for x in rows]
 
+
     def get_package_names(self):
         """
         Returns the names of packages that are in the database
@@ -166,6 +166,8 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
         """
         rows = self.sql_worker.execute("SELECT name FROM packages")
         return [x[0] for x in rows]
+
+
 
     def get_package_id(self, package_name):
         """
@@ -181,3 +183,20 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
         row = rows[0]
 
         return row[0]
+
+
+    def get_releases_for_package(self, package_name):
+        ret_val = {}
+        #cur = self.conn.cursor()
+        self.sql_worker.execute(SELECT_RELEASE_FILES_FOR_PACKAGE_SQL, (package_name,))
+        column_names = [x[0] for x in cur.description]
+        rows = cur.fetchall()
+
+        for row in rows:
+            row_dict = self._map_tuple_column_names(row, column_names)
+            release_name = row_dict['version']
+            if release_name not in ret_val:
+                ret_val[release_name] = [row_dict]
+            else:
+                ret_val[release_name].append(row_dict)
+        return ret_val

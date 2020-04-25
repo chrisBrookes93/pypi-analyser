@@ -1,6 +1,11 @@
 from collections import OrderedDict
+from datetime import datetime
 from io import open
 import os
+import six
+
+if six.PY3:
+    unicode = str
 
 
 def order_dict_by_key_name(unordered_dict):
@@ -39,7 +44,7 @@ def read_file_lines_into_list(file_path):
     return ret_val
 
 
-def write_list_lines_into_file(file_path, lines):
+def write_list_lines_into_file(file_path, lines, file_mode='w'):
     """
     Write a list of strings to a file, each one on their own line. OS specific line separator is used
 
@@ -47,7 +52,45 @@ def write_list_lines_into_file(file_path, lines):
     :type file_path: str
     :param lines: List of values to write
     :type lines: list
+    :param file_mode: Mode to open the file
+    :type: str
     """
-    with open(file_path, 'w', encoding='utf-8') as fp:
-        file_data = os.linesep.join(lines)
-        fp.writelines(file_data)
+    with open(file_path, file_mode, encoding='utf-8') as fp:
+        file_data = unicode(os.linesep.join(lines))
+        fp.write(file_data)
+
+
+def append_line_to_file(file_path, line_data):
+    """
+    Appends a line to the end of a file
+    :param file_path: Path to the file
+    :type file_path: str
+    :param line_data: Line to add
+    :type line_data: str
+    """
+    line_data += os.linesep
+    write_list_lines_into_file(file_path, [line_data], file_mode='a')
+
+
+def remove_unknown_keys_from_dict(dict_to_process, known_keys):
+    unknown_keys = set(dict_to_process.keys()) - set(known_keys)
+    for key in unknown_keys:
+        del dict_to_process[key]
+
+
+def normalize_package_name(package_name):
+    return package_name.lower().replace('_', '-')
+
+
+def order_release_names_fallback(release_dict):
+    release_keys = list(release_dict.keys())
+    # Begin by removing any releases that do no have any files
+    release_keys = [x for x in release_keys if release_dict[x]]
+
+    # Now order based on upload date of the first file in the release
+    ordered_releases_names = sorted(
+        release_keys,
+        key=lambda x: datetime.strptime(release_dict[x][0]['upload_time'], '%Y-%m-%dT%H:%M:%S'),
+        reverse=True)
+
+    return ordered_releases_names

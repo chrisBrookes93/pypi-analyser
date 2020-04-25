@@ -1,25 +1,28 @@
+from collections import OrderedDict
+from datetime import datetime
+from distutils.version import LooseVersion
 import logging
-import os
 import re
+from six.moves import xrange
 import threading
-import time
 from pypianalyser.sqlite_helpers import PyPiAnalyserSqliteHelper
 from pypianalyser.pypi_index_helpers import get_package_list, get_metadata_for_package
 from pypianalyser.exceptions import Exception404
+from pypianalyser.utils import append_line_to_file, read_file_lines_into_list, order_release_names_fallback
 
 logger = logging.getLogger(__file__)
 
 
 class PyPiMetadataRetriever:
 
-    def __init__(self, trunc_descriptions, trunc_releases, thread_count, db_path, max_packages, package_regex, file_404,
+    def __init__(self, trunc_description, trunc_releases, thread_count, db_path, max_packages, package_regex, file_404,
                  verbose=False):
         """
         Constructor for PyPiMetadataRetriever
 
-        :param trunc_descriptions: Number of characters to truncate the description field to, to reduce the size of the
+        :param trunc_description: Number of characters to truncate the description field to, to reduce the size of the
          database
-        :type trunc_descriptions: int
+        :type trunc_description: int
         :param trunc_releases: Number of releases to process for each package,
         :type trunc_releases: int
         :param thread_count: Number of threads to run to download the metadata
@@ -35,8 +38,8 @@ class PyPiMetadataRetriever:
         :param verbose: Enable verbose logging
         :type verbose: bool
         """
-        self.truncate_description = trunc_descriptions,
-        self.truncate_releases = trunc_releases,
+        self.truncate_description = trunc_description
+        self.truncate_releases = trunc_releases
         self.thread_count = thread_count
         self.db_path = db_path
         self.max_packages = max_packages
@@ -46,14 +49,19 @@ class PyPiMetadataRetriever:
         self.package_list = None
         self._threads = []
         self._progress_counter_lock = threading.Lock()
+        self._404_file_lock = threading.Lock()
         self._progress_counter = 0
         self._start_time = 0
         self._shutdown = False
 
-        # Initialize the connection to the DB
+        # Initialise the connection to the DB
         self._db_helper = PyPiAnalyserSqliteHelper(db_path)
         # Set the logging
         logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+
+    def __del__(self):
+        if self._db_helper:
+            self._db_helper.close()
 
     def calculate_package_list(self):
         """
@@ -69,85 +77,151 @@ class PyPiMetadataRetriever:
         """
         # Obtain the list from PyPi
         pypi_set = set(get_package_list())
-        logger.debug('Obtained a list of {} packages from the mirror'.format(len(pypi_set)))
-        # Remove the package already present in the DB
-        already_in_db = set(self._db_helper.get_package_names())
-        if already_in_db:
-            pypi_set = pypi_set - already_in_db
-            logger.debug('Found {} packages already in the DB, removing these from the list. List size is now {}'
-                         .format(len(already_in_db), len(pypi_set)))
-        # Remove packages that returned 404.txt on the previous run
-        failed_links = set(self.get_404_list())
-        if failed_links:
-            pypi_set = pypi_set - failed_links
-            logger.debug('Found {} broken links to packaged in {}, removing these from the list. List size is now {}'
-                         .format(len(already_in_db), self.file_path_404, len(pypi_set)))
+        logger.info('Obtained a list of {} packages from the mirror'.format(len(pypi_set)))
 
         if self.package_regex:
             regex = re.compile(self.package_regex)
             pypi_set = set(filter(regex.search, pypi_set))
-            logger.debug('Applied regex {}, reduced list to {}'.format(self.package_regex, len(pypi_set)))
+            logger.info('Applied regex {}, reduced list to {}'.format(self.package_regex, len(pypi_set)))
 
-        if len(pypi_set) > self.max_packages:
-            logger.debug('Reducing size of the package list down to {}'.format(self.max_packages))
-            pypi_set = sorted(list(pypi_set))[:self.max_packages]
+        # Remove packages that returned 404.txt on the previous run
+        failed_links = set(read_file_lines_into_list(self.file_path_404))
+        if failed_links:
+            pypi_set = pypi_set - failed_links
+            logger.info('Found {} broken links to packaged in {}, removing these from the list. List size is now {}'
+                         .format(len(failed_links), self.file_path_404, len(pypi_set)))
+
+        # Remove the package already present in the DB
+        already_in_db = set(self._db_helper.get_package_names())
+        if already_in_db:
+            pypi_set = pypi_set - already_in_db
+            logger.info('Found {} packages already in the DB, removing these from the list. List size is now {}'
+                         .format(len(already_in_db), len(pypi_set)))
+
+        pypi_set = sorted(list(pypi_set))
+        if self.max_packages and len(pypi_set) > self.max_packages:
+            logger.info('Reducing size of the package list down to {}'.format(self.max_packages))
+            pypi_set = pypi_set[:self.max_packages]
 
         self.package_list = pypi_set
         return self.package_list
 
-    def get_404_list(self):
-        ret_val = []
-        if os.path.exists(self.file_path_404):
-            pass
-        # TODO implement, should this go into a utils file?
-        return ret_val
-
     def run(self):
-        if self.package_list is None:
-            self.calculate_package_list()
-        self._start_time = time.time()
+        try:
+            if self.package_list is None:
+                self.calculate_package_list()
+            if not self.package_list:
+                logger.warn('0 packages matched the input filter')
+                return
+            self._start_time = datetime.now()
 
-        # Optimisation - little point in multi-threading if there's a small number of packages
-        if len(self.package_list) < 100:
-            logger.debug('Small number of packages to process, reducing down to 1 thread')
-            self._threaded_process(self.package_list, True)
-        else:
-            chunk_size = len(self.package_list) / self.thread_count
-            chunks = [self.package_list[x:x + chunk_size] for x in xrange(0, len(self.package_list), chunk_size)]
+            # Optimisation - little point in multi-threading if there's a small number of packages
+            if len(self.package_list) < 100:
+                logger.debug('Small number of packages to process, reducing down to 1 thread')
+                self._threaded_process(self.package_list)
+            else:
+                chunk_size = int(len(self.package_list) / self.thread_count)
+                chunks = [self.package_list[x:x + chunk_size] for x in xrange(0, len(self.package_list), chunk_size)]
 
-            for i in range(self.thread_count):
-                t = threading.Thread(target=self._threaded_process, args=(chunks[i], (i == 0)))
-                self._threads.append(t)
-                t.start()
+                for i in range(self.thread_count + 1):
+                    t = threading.Thread(target=self._threaded_process, args=(chunks[i],))
+                    self._threads.append(t)
+                    t.start()
 
-            for t in self._threads:
-                t.join()
+                for t in self._threads:
+                    t.join()
+            time_diff = datetime.now() - self._start_time
+            logger.info('Runtime: {}, finished processing all packages'.format(time_diff))
+        finally:
+            self._close_db()
+
+    def _close_db(self):
+        if self._db_helper:
+            self._db_helper.close()
+            self._db_helper = None
+
+    def _open_db(self):
+        if not self._db_helper:
+            self._db_helper = PyPiAnalyserSqliteHelper(self)
 
     def _threaded_process(self, package_list):
+        logger.debug('Thread {} started'.format(threading.current_thread().ident))
         i = 0
         # Calculate a sensible period to update a locked counter based on the size of the package list. This ensures we
         # don't do an operation that requires obtaining a lock too often.
-        update_period = min(5000, len(package_list) / 10)
+        update_period = int(min(5000, max(len(package_list) / 10, 1)))
 
         for package in package_list:
             if self._shutdown:
                 break
             try:
-                logger.info('Processing: {}'.format(package))
-                metadata = get_metadata_for_package(package, self.truncate_description, self.truncate_releases)
-                if metadata:
-                    self._db_helper.commit_package_to_db(metadata)
-            except Exception404, e:
+                logger.debug('Processing: {}'.format(package))
+                metadata = get_metadata_for_package(package)
+                if self.truncate_description >= 0:
+                    self._truncate_description(metadata)
+
+                if self.truncate_releases >= 0:
+                    self._truncate_releases(metadata)
+
+                self._db_helper.commit_package_to_db(metadata)
+            except Exception404 as e:
                 # HTTP 404 exceptions are common if the package is no longer on PyPi. We save these to a file so that
                 # we don't bother connecting to them on future runs
-                append_to_404_packages(package)
+                self._report_404(package)
                 logger.warn(e)
-            except Exception, e:
+            except Exception as e:
                 logger.error(e)
             i += 1
             # Update the global progress counter
             if i % update_period == 0:
                 self._update_progress(update_period)
+        logger.debug('Thread {} finished'.format(threading.current_thread().ident))
+
+    def _truncate_description(self, metadata):
+        """
+        Truncates the description and summary fields in the metadata dict to a specified length
+
+        :param metadata: Metadata containing the description
+        :type metadata: dict
+        """
+        description = metadata['info']['description']
+        if description:
+            metadata['info']['description'] = description[:self.truncate_description]
+
+        summary = metadata['info']['summary']
+        if summary:
+            metadata['info']['summary'] = summary[:self.truncate_description]
+
+    def _truncate_releases(self, metadata):
+        """
+        Truncates the releases in the metadata dict after ordering them
+
+        :param metadata: Metadata containing the releases
+        :type metadata: dict
+        """
+        releases = metadata['releases'] or {}
+        # In Py3 by default, we can't rely on the order of the release dictionary
+        try:
+            ordered_releases_names = sorted(list(metadata['releases'].keys()), key=LooseVersion, reverse=True)
+        except TypeError:
+            # Handle a Py3 issue when trying to compare two versions where one contains a string
+            # (https://bugs.python.org/issue14894). Instead sort by upload time of the first file of each release
+            ordered_releases_names = order_release_names_fallback(releases)
+
+        ordered_releases = OrderedDict()
+        for release_name in ordered_releases_names[:self.truncate_releases]:
+            ordered_releases[release_name] = releases[release_name]
+        metadata['releases'] = ordered_releases
+
+    def _report_404(self, package_name):
+        """
+        Adds the package name to the 404 file in a thread safe way
+
+        :param package_name: Name of the package to add
+        :type package_name: str
+        """
+        with self._404_file_lock:
+            append_line_to_file(self.file_path_404, package_name)
 
     def _update_progress(self, number_to_add):
         """
@@ -158,6 +232,5 @@ class PyPiMetadataRetriever:
         """
         with self._progress_counter_lock:
             self._progress_counter += number_to_add
-        elapsed_time = self._start_time = time.time()
-        str_time = time.strftime('%H:%M:%S', elapsed_time)
-        logger.info('Runtime: {}, processed {}/{}'.format(str_time, self._progress_counter, len(self.package_list)))
+        time_diff = datetime.now() - self._start_time
+        logger.info('Runtime: {}, processed {}/{}'.format(time_diff, self._progress_counter, len(self.package_list)))

@@ -4,7 +4,7 @@ import sys
 from io import open
 from pypianalyser.pypi_metadata_retriever import PyPiMetadataRetriever
 
-logging.basicConfig(format='%(message)s', level=logging.INFO, stream=sys.stdout)
+logging.basicConfig(format='%(message)s', level=logging.INFO)
 logger = logging.getLogger(__file__)
 
 if __name__ == '__main__':
@@ -12,6 +12,7 @@ if __name__ == '__main__':
     parser.add_argument('-td', '--trunc_descriptions',
                         help='Truncate the description field to X characters to reduce the size of the database. Use '
                              '-1 for no truncation. Default is 500',
+                        type=int,
                         default=500)
     parser.add_argument('-tr', '--trunc_releases',
                         help='Specify the maximum number of releases to store in the database for each package. In many'
@@ -36,7 +37,7 @@ if __name__ == '__main__':
     parser.add_argument('-pr', '--package_regex',
                         help='Specify a regex to match package names against. Only those that match will be retrieved. '
                              'NOTE: all package names are normalized before this, whereby characters a lowercased and '
-                             'underscores are replaced with hyphens. E.g. ^robotframework_.*')
+                             'underscores are replaced with hyphens. E.g. ^robotframework-.*')
     parser.add_argument('-404', '--file_404_list',
                         help='Path to a file to store a list of package names that returned a HTTP 404. This usually'
                              ' means that the package no longer exists in PyPi. The file is useful for doing future '
@@ -64,11 +65,10 @@ if __name__ == '__main__':
 
     if parsed_args.dry_run:
         package_list = retriever.calculate_package_list()
-        # TODO move this into a function
         with open('dry_run_package_list.txt', 'w', encoding='utf-8') as fp:
-            fp.write('\n'.join(package_list))
+            fp.write(u'\n'.join(package_list))
 
         logger.info('Dry run has calculated {} packages that would be processed. This list has been output to '
-                    'dry_run_package_list.txt'.format(package_list))
+                    'dry_run_package_list.txt'.format(len(package_list)))
     else:
         retriever.run()

@@ -22,6 +22,8 @@ setuptools.setup(
     ],
     install_requires=[
         'six',
-        'sqlite3worker'
+        'sqlite3worker',
+        'lxml',
+        'requests'
     ]
 )

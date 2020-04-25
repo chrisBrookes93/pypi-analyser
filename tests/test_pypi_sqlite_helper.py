@@ -57,7 +57,7 @@ class PyPiAnalyserSqliteHelperTests(unittest.TestCase):
         self.assertDictContainsSubset(expected_value, actual_value)
 
     def test_classifiers(self):
-        actual_value = self.test_obj.get_classifiers_for_package('robotframework')
+        actual_value = self.test_obj.get_classifiers_for_package_name('robotframework')
         expected_value = [
             "Development Status :: 5 - Production/Stable",
             "Framework :: Robot Framework",
@@ -80,7 +80,7 @@ class PyPiAnalyserSqliteHelperTests(unittest.TestCase):
         ]
         self.assertListEqual(expected_value, actual_value)
 
-        actual_value = self.test_obj.get_classifiers_for_package('robotframework-remoterunner')
+        actual_value = self.test_obj.get_classifiers_for_package_name('robotframework-remoterunner')
         expected_value = [
             "License :: OSI Approved :: MIT License",
             "Operating System :: OS Independent",

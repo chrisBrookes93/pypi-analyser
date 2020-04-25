@@ -26,6 +26,11 @@ CREATE_PACKAGE_TABLE_SQL = \
     home_page text);
     """
 
+PACKAGE_TABLE_COLUMNS = \
+    ["id", "docs_url", "name", "maintainer", "requires_python", "maintainer_email", "keywords", "package_url", "author",
+     "author_email", "download_url", "project_urls", "platform", "version", "description", "release_url",
+     "description_content_type", "requires_dist", "project_url", "bugtrack_url", "license", "summary", "home_page"]
+
 CREATE_CLASSIFIER_STRING_TABLE_SQL = \
     """
     CREATE TABLE IF NOT EXISTS classifier_strings (
@@ -117,6 +122,9 @@ INSERT_PACKAGE_RELEASES_SQL = \
     version) 
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
+PACKAGE_RELEASES_TABLE_COLUMNS = \
+    ["comment_text", "filename", "has_sig", "md5_digest", "package_id", "packagetype", "python_version",
+     "requires_python", "size", "upload_time", "upload_time_iso_8601", "url", "version"]
 
 SELECT_ID_FOR_CLASSIFIER_STRING_SQL = \
     """
