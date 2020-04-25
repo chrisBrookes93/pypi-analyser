@@ -96,7 +96,7 @@ def get_package_list(domain='https://pypi.org/'):
     tree = html.fromstring(response.content)
     packages = tree.xpath('//body/a')
     # x.text.lower().replace('-', '_')
-    package_names = [x.text.lower() for x in packages]
+    package_names = [x.text.lower().replace('-', '_') for x in packages]
     logger.debug('Found {} packages from the index {}'.format(len(package_names), url))
     return package_names
 

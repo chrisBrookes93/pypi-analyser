@@ -145,3 +145,14 @@ SELECT_PACKAGE_BY_NAME_SQL = \
     WHERE name = ?
     """
 
+
+SELECT_PACKAGES_WITH_PY3_CLASSIFIER = \
+    """
+    SELECT DISTINCT packages.name FROM packages 
+    INNER JOIN package_classifiers 
+        ON packages.id = package_classifiers.package_id 
+    INNER JOIN classifier_strings 
+        ON classifier_strings.id = package_classifiers.classifier_id
+    WHERE
+        classifier_strings.name LIKE "Programming Language :: Python :: 3%"
+    """
