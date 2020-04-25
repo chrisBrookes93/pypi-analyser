@@ -83,6 +83,11 @@ def normalize_package_name(package_name):
 
 
 def order_release_names_fallback(release_dict):
+    """
+    
+    :param release_dict:
+    :return:
+    """
     release_keys = list(release_dict.keys())
     # Begin by removing any releases that do no have any files
     release_keys = [x for x in release_keys if release_dict[x]]
