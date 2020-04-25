@@ -156,3 +156,5 @@ SELECT_PACKAGES_WITH_PY3_CLASSIFIER = \
     WHERE
         classifier_strings.name LIKE "Programming Language :: Python :: 3%"
     """
+
+#SELECT_PACKAGES_WITH_PY2_PY3_CLASSIFIER =

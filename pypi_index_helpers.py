@@ -95,37 +95,6 @@ def get_package_list(domain='https://pypi.org/'):
     response = requests.get(url)
     tree = html.fromstring(response.content)
     packages = tree.xpath('//body/a')
-    # x.text.lower().replace('-', '_')
-    package_names = [x.text.lower().replace('-', '_') for x in packages]
+    package_names = [x.text.lower().replace('_', '-') for x in packages]
     logger.debug('Found {} packages from the index {}'.format(len(package_names), url))
     return package_names
-
-
-
-
-
-
-# def build_cache():
-#     cache = {}
-#     package_list = get_packaged_list()
-#     i = 0
-#     successes = 0
-#     for package in package_list:
-#         try:
-#             i = i + 1
-#             print('Processing {}, package {} of {}'.format(package, i, len(package_list)))
-#             meta_data = get_json_blob_for_package(package)
-#             cache[package] = meta_data
-#             successes = successes + 1
-#         except Exception, e:
-#             print(e)
-#
-#     with open('pypi_cache.json', 'w') as fp:
-#         json.dump(cache, fp, indent=4)
-#
-#     print('Successfully processed {} of {}'.format(successes, len(package_list)))
-
-
-
-
-

@@ -1,3 +1,0 @@
-janson_lol: ('Connection aborted.', error(10060, 'A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond'))
-pyocd: ('Connection aborted.', error(10060, 'A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond'))
-querytree: ('Connection aborted.', error(10060, 'A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond'))

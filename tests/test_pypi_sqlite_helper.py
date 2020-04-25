@@ -162,5 +162,3 @@ class PyPiAnalyserSqliteHelperTests(unittest.TestCase):
             "size": 647126
             }
         self.assertDictContainsSubset(expected_release_file2, actual_release_file2)
-
-

@@ -19,7 +19,7 @@ import logging
 import threading
 import os
 
-from python_index_helpers import get_metadata_for_package, get_package_list
+from pypi_index_helpers import get_metadata_for_package, get_package_list
 from sqlite_helpers import PyPiAnalyserSqliteHelper
 from PyPi_Py3_Analyser.exceptions import Exception404
 

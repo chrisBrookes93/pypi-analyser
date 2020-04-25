@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 from io import open
-from pypy_metadata_retriever import PyPiMetadataRetriever
+from pypi_metadata_retriever import PyPiMetadataRetriever
 
 logging.basicConfig(format='%(message)s', level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__file__)
@@ -10,12 +10,13 @@ logger = logging.getLogger(__file__)
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Script to download PyPi metadata into an SQLite database for easy querying.')
     parser.add_argument('-td', '--trunc_descriptions',
-                        help='Truncate the description field to X characters to reduce the size of the database. '
-                             'Default is 500',
+                        help='Truncate the description field to X characters to reduce the size of the database. Use '
+                             '-1 for no truncation. Default is 500',
                         default=500)
     parser.add_argument('-tr', '--trunc_releases',
                         help='Specify the maximum number of releases to store in the database for each package. In many'
-                             ' cases you may only be interested in the latest one or two releases. Default is 2',
+                             ' cases you may only be interested in the latest one or two releases. Use -1 for no '
+                             'truncation. Default is 2',
                         type=int,
                         default=2)
     parser.add_argument('-t', '--threads',
