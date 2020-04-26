@@ -3,20 +3,20 @@ from datetime import datetime
 from distutils.version import LooseVersion
 import logging
 import re
-from six.moves import xrange
 import threading
 from pypianalyser.pypi_sqlite_helper import PyPiAnalyserSqliteHelper
 from pypianalyser.pypi_index_helpers import get_package_list, get_metadata_for_package
 from pypianalyser.exceptions import Exception404
-from pypianalyser.utils import append_line_to_file, read_file_lines_into_list, order_release_names_fallback
+from pypianalyser.utils import append_line_to_file, read_file_lines_into_list, order_release_names_fallback, \
+    split_list_into_chunks
 
 logger = logging.getLogger(__file__)
 
 
 class PyPiMetadataRetriever:
 
-    def __init__(self, trunc_description, trunc_releases, thread_count, db_path, max_packages, package_regex, file_404,
-                 verbose=False):
+    def __init__(self, trunc_description=-1, trunc_releases=-1, thread_count=1, db_path='pypi.sqlite', max_packages=-1,
+                 package_regex=None, file_404='404.txt', verbose=False):
         """
         Constructor for PyPiMetadataRetriever
 
@@ -127,10 +127,9 @@ class PyPiMetadataRetriever:
                 logger.debug('Small number of packages to process, reducing down to 1 thread')
                 self._threaded_process(self.package_list)
             else:
-                chunk_size = int(len(self.package_list) / self.thread_count)
-                chunks = [self.package_list[x:x + chunk_size] for x in xrange(0, len(self.package_list), chunk_size)]
+                chunks = split_list_into_chunks(self.package_list, self.thread_count)
 
-                for i in range(self.thread_count + 1):
+                for i in range(self.thread_count):
                     t = threading.Thread(target=self._threaded_process, args=(chunks[i],))
                     self._threads.append(t)
                     t.start()
@@ -139,6 +138,11 @@ class PyPiMetadataRetriever:
                     t.join()
             time_diff = datetime.now() - self._start_time
             logger.info('Runtime: {}, finished processing all packages'.format(time_diff))
+        except KeyboardInterrupt:
+            logger.info('Keyboard interrupt, waiting for threads to finish')
+            self._shutdown = True
+            for t in self._threads:
+                t.join()
         finally:
             self._close_db()
 
@@ -223,7 +227,7 @@ class PyPiMetadataRetriever:
         # In Py3 by default we can't rely on the order of the release dictionary so order the releases using an
         # OrderedDict
         try:
-            ordered_releases_names = sorted(list(metadata['releases'].keys()), key=LooseVersion, reverse=True)
+            ordered_releases_names = sorted(list(releases.keys()), key=LooseVersion, reverse=True)
         except TypeError:
             # Handle a Py3 issue when trying to compare two versions where one contains a string
             # (https://bugs.python.org/issue14894). Instead sort by upload time of the first file of each release
@@ -251,7 +255,8 @@ class PyPiMetadataRetriever:
         :param number_to_add: Number of packages processed by the calling thread since the last invocation
         :type number_to_add: int
         """
-        with self._progress_counter_lock:
-            self._progress_counter += number_to_add
-        time_diff = datetime.now() - self._start_time
-        logger.info('Runtime: {}, processed {}/{}'.format(time_diff, self._progress_counter, len(self.package_list)))
+        if self._start_time:
+            with self._progress_counter_lock:
+                self._progress_counter += number_to_add
+            time_diff = datetime.now() - self._start_time
+            logger.info('Runtime: {}, processed {}/{}'.format(time_diff, self._progress_counter, len(self.package_list)))

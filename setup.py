@@ -25,5 +25,10 @@ setuptools.setup(
         'sqlite3worker',
         'lxml',
         'requests'
-    ]
+    ],
+    entry_points={
+        'console_scripts': [
+            'pypianalyser=pypianalyser:main'
+        ]
+    }
 )

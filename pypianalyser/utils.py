@@ -3,6 +3,7 @@ from datetime import datetime
 from io import open
 import os
 import six
+from six.moves import xrange
 
 if six.PY3:
     unicode = str
@@ -124,3 +125,25 @@ def order_release_names_fallback(release_dict):
         reverse=True)
 
     return ordered_releases_names
+
+
+def split_list_into_chunks(full_list, chunk_count):
+    """
+    Splits a list into X chunks. If the number is not exactly divisible, the remainder is added to the last chunk
+
+    :param full_list: List to split
+    :type full_list: list
+    :param chunk_count: Number of chunks to split into
+    :type chunk_count: int
+
+    :return: List with chunk_count elements
+    :rtype: lsit
+    """
+    chunk_size = int(len(full_list) / chunk_count)
+    chunks = [full_list[x:x + chunk_size] for x in xrange(0, len(full_list), chunk_size)]
+    # If the size isn't exactly divisible there will be an extra chunk, append this onto the second last one
+    if len(chunks) > chunk_count:
+        extra_chunk = chunks[-1]
+        chunks = chunks[:-1]
+        chunks[-1].extend(extra_chunk)
+    return chunks

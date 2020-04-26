@@ -23,9 +23,9 @@ class TestUtils(unittest.TestCase):
         result = order_dict_by_key_name(input)
         self.assertIsInstance(result, OrderedDict)
 
-        expected_vales = [1, 2, 3, 4]
-        actual_values = result.values()
-        self.assertListEqual(expected_vales, actual_values)
+        expected_values = [1, 2, 3, 4]
+        actual_values = list(result.values())
+        self.assertListEqual(expected_values, actual_values)
 
     def test_write_list_lines_into_file(self):
         expected_value = ['A', 'B', 'C']
@@ -76,6 +76,7 @@ class TestUtils(unittest.TestCase):
                     'upload_time': '2016-02-19T13:08:33',
                     'upload_time_iso_8601': '2016-02-19T13:08:33.988065Z'
                 }],
+            '5.0.1': [],
             '0.1.0':
                 [{
                     'filename': 'robotframework-difflibrary-0.1.0.tar.gz',

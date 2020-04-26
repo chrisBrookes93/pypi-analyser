@@ -3,3 +3,4 @@
 404.txt
 /.tox/
 /*.egg-info/
+/htmlcov/

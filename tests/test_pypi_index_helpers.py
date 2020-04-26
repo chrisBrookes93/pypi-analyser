@@ -5,7 +5,8 @@ from mock import MagicMock, patch
 from pypianalyser.pypi_index_helpers import get_package_list, get_metadata_for_package
 from pypianalyser.exceptions import Exception404
 
-class TestUtils(unittest.TestCase):
+
+class TestPyPiIndexHelpers(unittest.TestCase):
 
     def setUp(self):
         self.resources_dir = os.path.join(os.path.dirname(__file__), 'resources')
