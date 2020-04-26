@@ -1,44 +1,16 @@
-from sqlite3worker import Sqlite3Worker
 from pypianalyser.sql_queries import CREATE_TABLE_SQL_QUERIES, INSERT_PACKAGE_SQL, INSERT_CLASSIFIER_STRING_SQL, \
     INSERT_PACKAGE_CLASSIFIER_SQL, INSERT_PACKAGE_RELEASES_SQL, SELECT_ID_FOR_CLASSIFIER_STRING_SQL, \
-    SELECT_CLASSIFIERS_FOR_PACKAGE_SQL, PACKAGE_TABLE_COLUMNS, PACKAGE_RELEASES_TABLE_COLUMNS
+    SELECT_CLASSIFIERS_FOR_PACKAGE_SQL, PACKAGE_TABLE_COLUMNS, PACKAGE_RELEASES_TABLE_COLUMNS, \
+    SELECT_RELEASE_FILES_FOR_PACKAGE_SQL
 from pypianalyser.utils import order_dict_by_key_name, remove_unknown_keys_from_dict, normalize_package_name
-
-
-class SQLiteHelper(object):
-    """
-    Class to wrap a concurrent SQLite database
-    """
-    def __init__(self, db_path):
-        """
-        Constructor for SQLiteHelper
-
-        :param db_path: Path to the database file
-        :type db_path: str
-        """
-        self._db_path = db_path
-        self.sql_worker = Sqlite3Worker(db_path)
-
-    def __del__(self):
-        """
-        Ensure that the database file is closed
-        """
-        self.close()
-
-    def close(self):
-        """
-        Closes the database file
-        """
-        if self.sql_worker:
-            self.sql_worker.close()
-            self.sql_worker = None
+from pypianalyser.sqlite_helper import SQLiteHelper
 
 
 class PyPiAnalyserSqliteHelper(SQLiteHelper):
 
     def __init__(self, db_path):
         """
-        Constructor for PyPiAnalyserSqliteHelper. Opens a handle to the database and created the table if they do not
+        Constructor for PyPiAnalyserSqliteHelper. Opens a handle to the database and creates the tables if they do not
         exist
 
         :param db_path: Path to the database file
@@ -102,6 +74,17 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
         return package_id
 
     def add_release(self, package_id, release_name, release):
+        """
+        Adds a release of the database. To flatten the structure, there is instead a table for release files.
+        When querying back they will be build back into a dictionary of versions
+
+        :param package_id: ID of the package they belong to
+        :type package_id: int
+        :param release_name: Name of the release e.g. 1.2.1
+        :type release_name: str
+        :param release: List of release files to add
+        :type release: list
+        """
         # A release may have multiple files and therefore 'release' is a list. To simplify the DB, treat each one as a
         # release, they can be retrieved easily because they're have the same release version field.
         for release_file in release:
@@ -116,6 +99,13 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
             self.sql_worker.execute(INSERT_PACKAGE_RELEASES_SQL, tuple(ordered_release_dict.values()))
 
     def add_classifier(self, package_id, classifier):
+        """
+        Adds a classifier for a given package ID
+        :param package_id: ID of the package the classifier belongs to
+        :type package_id: int
+        :param classifier: Classifier string
+        :type classifier: str
+        """
         if classifier in self._classifier_ids_cache:
             classifier_id = self._classifier_ids_cache[classifier]
         else:
@@ -156,7 +146,6 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
 
         return [x[0] for x in rows]
 
-
     def get_package_names(self):
         """
         Returns the names of packages that are in the database
@@ -167,11 +156,9 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
         rows = self.sql_worker.execute("SELECT name FROM packages")
         return [x[0] for x in rows]
 
-
-
     def get_package_id(self, package_name):
         """
-        Query's the database and returns the ID for a given package name
+        Queries the database and returns the ID for a given package name
 
         :param package_name: Name of the package to query
         :type package_name: str
@@ -184,19 +171,38 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
 
         return row[0]
 
-
     def get_releases_for_package(self, package_name):
-        ret_val = {}
-        #cur = self.conn.cursor()
-        self.sql_worker.execute(SELECT_RELEASE_FILES_FOR_PACKAGE_SQL, (package_name,))
-        column_names = [x[0] for x in cur.description]
-        rows = cur.fetchall()
+        """
+        Queries the releases for a given package name.
 
-        for row in rows:
-            row_dict = self._map_tuple_column_names(row, column_names)
+        :param package_name: Name of the package to query
+        :type package_name: str
+
+        :return: List of row dictionaries
+        :rtype: list
+        """
+        ret_val = {}
+        rows = self.sql_worker.execute(SELECT_RELEASE_FILES_FOR_PACKAGE_SQL, (package_name,))
+        rows = self._map_data_to_column_names(rows, PACKAGE_RELEASES_TABLE_COLUMNS)
+
+        # Take the releases and put it back into a dictionary like it was when it was downloaded from PyPi
+        for row_dict in rows:
             release_name = row_dict['version']
             if release_name not in ret_val:
                 ret_val[release_name] = [row_dict]
             else:
                 ret_val[release_name].append(row_dict)
         return ret_val
+
+    def get_package_by_name(self, package_name):
+        """
+        Queries a package by name
+        :param package_name: Name of the package to query values for
+        :type package_name: str
+
+        :return: List of dictionary rows
+        :rtype: list
+        """
+        rows = self.sql_worker.execute("SELECT * FROM packages WHERE name=?", (package_name,))
+        rows = self._map_data_to_column_names(rows, PACKAGE_TABLE_COLUMNS)
+        return rows[0]

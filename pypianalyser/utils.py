@@ -56,37 +56,62 @@ def write_list_lines_into_file(file_path, lines, file_mode='w'):
     :type: str
     """
     with open(file_path, file_mode, encoding='utf-8') as fp:
-        file_data = unicode(os.linesep.join(lines))
+        file_data = unicode('\r'.join(lines))
         fp.write(file_data)
 
 
 def append_line_to_file(file_path, line_data):
     """
     Appends a line to the end of a file
+
     :param file_path: Path to the file
     :type file_path: str
     :param line_data: Line to add
     :type line_data: str
     """
-    line_data += os.linesep
+    line_data += '\r'
     write_list_lines_into_file(file_path, [line_data], file_mode='a')
 
 
 def remove_unknown_keys_from_dict(dict_to_process, known_keys):
+    """
+    Removes all key entries from dict_to_process if they are not present in known_keys
+
+    :param dict_to_process: Dictionary to process
+    :type dict_to_process: dict
+    :param known_keys: Keys that are allowed in the dictionary
+    :type known_keys: list
+    """
     unknown_keys = set(dict_to_process.keys()) - set(known_keys)
     for key in unknown_keys:
         del dict_to_process[key]
 
 
 def normalize_package_name(package_name):
+    """
+    Normalizes a package name by lowercasing and changing underscores to hyphens
+
+    :param package_name: Name of the package
+    :type package_name: str
+
+    :return: Normalized package name
+    :rtype: str
+    """
     return package_name.lower().replace('_', '-')
 
 
 def order_release_names_fallback(release_dict):
     """
-    
-    :param release_dict:
-    :return:
+    In Python3 if you compare two versions using LooseVersion where one has a string in, e.g.
+    LooseVersion('0.1dev') < LooseVersion('0.1.0')
+    an error is thrown because its trying to compare a string to an int. This is fallback that orders versions by the
+    upload date of the first file in each release
+
+    :param release_dict: Releases to order keys for
+    :type release_dict: dict
+
+    :return: Ordered list of keys, with releases with no files removed
+    :rtype: list
     """
     release_keys = list(release_dict.keys())
     # Begin by removing any releases that do no have any files

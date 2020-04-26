@@ -25,7 +25,6 @@ CREATE_PACKAGE_TABLE_SQL = \
     summary text,
     home_page text);
     """
-
 PACKAGE_TABLE_COLUMNS = \
     ["id", "docs_url", "name", "maintainer", "requires_python", "maintainer_email", "keywords", "package_url", "author",
      "author_email", "download_url", "project_urls", "platform", "version", "description", "release_url",
@@ -37,6 +36,7 @@ CREATE_CLASSIFIER_STRING_TABLE_SQL = \
     id integer PRIMARY KEY,
     name text NOT NULL UNIQUE);
     """
+CLASSIFIER_STRING_TABLE_COLUMNS = ["id", "name"]
 
 CREATE_PACKAGE_CLASSIFIERS_TABLE_SQL = \
     """
@@ -47,6 +47,7 @@ CREATE_PACKAGE_CLASSIFIERS_TABLE_SQL = \
     FOREIGN KEY(package_id) REFERENCES packages(id),
     FOREIGN KEY(classifier_id) REFERENCES classifier_strings(id));
     """
+PACKAGE_CLASSIFIERS_TABLE_COLUMNS = ["id", "package_id", "classifier_id"]
 
 CREATE_RELEASE_TABLE_SQL = \
     """
@@ -67,6 +68,9 @@ CREATE_RELEASE_TABLE_SQL = \
     size integer,
     FOREIGN KEY(package_id) REFERENCES packages(id));
     """
+PACKAGE_RELEASES_TABLE_COLUMNS = \
+    ["id", "package_id", "version", "has_sig", "upload_time", "comment_text", "python_version",
+     "url", "md5_digest", "requires_python", "filename", "packagetype", "upload_time_iso_8601", "size"]
 
 CREATE_TABLE_SQL_QUERIES = [CREATE_PACKAGE_TABLE_SQL,
                             CREATE_CLASSIFIER_STRING_TABLE_SQL,
@@ -122,9 +126,6 @@ INSERT_PACKAGE_RELEASES_SQL = \
     version) 
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
-PACKAGE_RELEASES_TABLE_COLUMNS = \
-    ["comment_text", "filename", "has_sig", "md5_digest", "package_id", "packagetype", "python_version",
-     "requires_python", "size", "upload_time", "upload_time_iso_8601", "url", "version"]
 
 SELECT_ID_FOR_CLASSIFIER_STRING_SQL = \
     """
@@ -164,5 +165,3 @@ SELECT_PACKAGES_WITH_PY3_CLASSIFIER = \
     WHERE
         classifier_strings.name LIKE "Programming Language :: Python :: 3%"
     """
-
-#SELECT_PACKAGES_WITH_PY2_PY3_CLASSIFIER =

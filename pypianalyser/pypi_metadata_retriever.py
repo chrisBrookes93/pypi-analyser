@@ -5,7 +5,7 @@ import logging
 import re
 from six.moves import xrange
 import threading
-from pypianalyser.sqlite_helpers import PyPiAnalyserSqliteHelper
+from pypianalyser.pypi_sqlite_helper import PyPiAnalyserSqliteHelper
 from pypianalyser.pypi_index_helpers import get_package_list, get_metadata_for_package
 from pypianalyser.exceptions import Exception404
 from pypianalyser.utils import append_line_to_file, read_file_lines_into_list, order_release_names_fallback
@@ -54,8 +54,7 @@ class PyPiMetadataRetriever:
         self._start_time = 0
         self._shutdown = False
 
-        # Initialise the connection to the DB
-        self._db_helper = PyPiAnalyserSqliteHelper(db_path)
+        self._db_helper = None
         # Set the logging
         logger.setLevel(logging.DEBUG if verbose else logging.INFO)
 
@@ -75,44 +74,52 @@ class PyPiMetadataRetriever:
         :return: List of packages that match the input specifications
         :rtype: list
         """
-        # Obtain the list from PyPi
-        pypi_set = set(get_package_list())
-        logger.info('Obtained a list of {} packages from the mirror'.format(len(pypi_set)))
+        self._open_db()
+        try:
+            # Obtain the list from PyPi
+            pypi_set = set(get_package_list())
+            logger.info('Obtained a list of {} packages from the mirror'.format(len(pypi_set)))
 
-        if self.package_regex:
-            regex = re.compile(self.package_regex)
-            pypi_set = set(filter(regex.search, pypi_set))
-            logger.info('Applied regex {}, reduced list to {}'.format(self.package_regex, len(pypi_set)))
+            if self.package_regex:
+                regex = re.compile(self.package_regex)
+                pypi_set = set(filter(regex.search, pypi_set))
+                logger.info('Applied regex {}, reduced list to {}'.format(self.package_regex, len(pypi_set)))
 
-        # Remove packages that returned 404.txt on the previous run
-        failed_links = set(read_file_lines_into_list(self.file_path_404))
-        if failed_links:
-            pypi_set = pypi_set - failed_links
-            logger.info('Found {} broken links to packaged in {}, removing these from the list. List size is now {}'
-                         .format(len(failed_links), self.file_path_404, len(pypi_set)))
+            # Remove packages that returned 404.txt on the previous run
+            failed_links = set(read_file_lines_into_list(self.file_path_404))
+            if failed_links:
+                pypi_set = pypi_set - failed_links
+                logger.info('Found {} broken links to packaged in {}, removing these from the list. List size is now {}'
+                             .format(len(failed_links), self.file_path_404, len(pypi_set)))
 
-        # Remove the package already present in the DB
-        already_in_db = set(self._db_helper.get_package_names())
-        if already_in_db:
-            pypi_set = pypi_set - already_in_db
-            logger.info('Found {} packages already in the DB, removing these from the list. List size is now {}'
-                         .format(len(already_in_db), len(pypi_set)))
+            # Remove the package already present in the DB
+            already_in_db = set(self._db_helper.get_package_names())
+            if already_in_db:
+                pypi_set = pypi_set - already_in_db
+                logger.info('Found {} packages already in the DB, removing these from the list. List size is now {}'
+                             .format(len(already_in_db), len(pypi_set)))
 
-        pypi_set = sorted(list(pypi_set))
-        if self.max_packages and len(pypi_set) > self.max_packages:
-            logger.info('Reducing size of the package list down to {}'.format(self.max_packages))
-            pypi_set = pypi_set[:self.max_packages]
+            pypi_set = sorted(list(pypi_set))
+            if self.max_packages and len(pypi_set) > self.max_packages:
+                logger.info('Reducing size of the package list down to {}'.format(self.max_packages))
+                pypi_set = pypi_set[:self.max_packages]
 
-        self.package_list = pypi_set
-        return self.package_list
+            self.package_list = pypi_set
+            return self.package_list
+        finally:
+            self._close_db()
 
     def run(self):
+        """
+        Run the metadata downloader
+        """
         try:
             if self.package_list is None:
                 self.calculate_package_list()
             if not self.package_list:
                 logger.warn('0 packages matched the input filter')
                 return
+            self._open_db()
             self._start_time = datetime.now()
 
             # Optimisation - little point in multi-threading if there's a small number of packages
@@ -136,15 +143,27 @@ class PyPiMetadataRetriever:
             self._close_db()
 
     def _close_db(self):
+        """
+        Close the database if its open
+        """
         if self._db_helper:
             self._db_helper.close()
             self._db_helper = None
 
     def _open_db(self):
+        """
+        Open the database
+        """
         if not self._db_helper:
-            self._db_helper = PyPiAnalyserSqliteHelper(self)
+            self._db_helper = PyPiAnalyserSqliteHelper(self.db_path)
 
     def _threaded_process(self, package_list):
+        """
+        Threaded function that downloads package metadata from PyPi
+
+        :param package_list: List of packages to obtain metadata for
+        :type package_list: list
+        """
         logger.debug('Thread {} started'.format(threading.current_thread().ident))
         i = 0
         # Calculate a sensible period to update a locked counter based on the size of the package list. This ensures we
@@ -200,7 +219,9 @@ class PyPiMetadataRetriever:
         :type metadata: dict
         """
         releases = metadata['releases'] or {}
-        # In Py3 by default, we can't rely on the order of the release dictionary
+
+        # In Py3 by default we can't rely on the order of the release dictionary so order the releases using an
+        # OrderedDict
         try:
             ordered_releases_names = sorted(list(metadata['releases'].keys()), key=LooseVersion, reverse=True)
         except TypeError:

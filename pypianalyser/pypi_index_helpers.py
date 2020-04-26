@@ -45,8 +45,8 @@ def get_package_list(domain='https://pypi.org/'):
     :rtype: str
     """
     url = urllib.parse.urljoin(domain, 'simple')
-    fp = urllib.request.urlopen(url)
-    tree = html.fromstring(fp.read())
+    response = requests.get(url)
+    tree = html.fromstring(response.content)
     packages = tree.xpath('//body/a')
     package_names = [normalize_package_name(x.text) for x in packages]
     return package_names
