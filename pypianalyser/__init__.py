@@ -52,7 +52,7 @@ def main():
                              ' console. The entire list will be written out to a file called dry_run_package_list.txt')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Verbose mode.')
-
+     
     parsed_args = parser.parse_args()
     retriever = PyPiMetadataRetriever(parsed_args.trunc_descriptions,
                                       parsed_args.trunc_releases,
