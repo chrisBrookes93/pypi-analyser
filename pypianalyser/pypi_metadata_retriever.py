@@ -52,6 +52,7 @@ class PyPiMetadataRetriever:
         self._404_file_lock = threading.Lock()
         self._progress_counter = 0
         self._start_time = 0
+        self._last_update_time = datetime.now()
         self._shutdown = False
 
         self._db_helper = None
@@ -180,8 +181,9 @@ class PyPiMetadataRetriever:
         logger.debug('Thread {} started'.format(threading.current_thread().ident))
         i = 0
         # Calculate a sensible period to update a locked counter based on the size of the package list. This ensures we
-        # don't do an operation that requires obtaining a lock too often.
-        update_period = int(min(1000, max(len(package_list) / 10, 1)))
+        # don't do an operation that requires obtaining a lock too often. Typically updates every 10% but minimum of
+        # every 200 packages
+        update_period = int(min(200, max(len(package_list) / 10, 1)))
 
         for package in package_list:
             if self._shutdown:
@@ -200,7 +202,7 @@ class PyPiMetadataRetriever:
                 # HTTP 404 exceptions are common if the package is no longer on PyPi. We save these to a file so that
                 # we don't bother connecting to them on future runs
                 self._report_404(package)
-                logger.warn(e)
+                logger.debug(e)
             except Exception as e:
                 logger.error(e)
             i += 1
@@ -264,8 +266,11 @@ class PyPiMetadataRetriever:
         :param number_to_add: Number of packages processed by the calling thread since the last invocation
         :type number_to_add: int
         """
-        if self._start_time:
-            with self._progress_counter_lock:
-                self._progress_counter += number_to_add
-            time_diff = datetime.now() - self._start_time
-            logger.info('Runtime: {}, processed {}/{}'.format(time_diff, self._progress_counter, len(self.package_list)))
+        with self._progress_counter_lock:
+            self._progress_counter += number_to_add
+            since_last_update = datetime.now() - self._last_update_time
+            if since_last_update.total_seconds() > 60:
+                run_time = datetime.now() - self._start_time
+                logger.info('Runtime: {}, processed {}/{}'.format(run_time, self._progress_counter,
+                                                                  len(self.package_list)))
+                self._last_update_time = datetime.now()
