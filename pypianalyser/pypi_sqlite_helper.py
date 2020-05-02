@@ -54,7 +54,7 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
         # Join this field for simplicity
         requires_dist = package_info['requires_dist']
         if requires_dist:
-            package_info['requires_dist'] = ', '.join(requires_dist)
+            package_info['requires_dist'] = u', '.join(requires_dist)
 
         # PyPi added a field 'yanked' during development of this. Remove any fields we don't recognise/use so that we
         # don't encounter any database issues
@@ -183,7 +183,7 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
         """
         ret_val = {}
         rows = self.sql_worker.execute(SELECT_RELEASE_FILES_FOR_PACKAGE_SQL, (package_name,))
-        rows = self._map_data_to_column_names(rows, PACKAGE_RELEASES_TABLE_COLUMNS)
+        rows = self.map_data_to_column_names(rows, PACKAGE_RELEASES_TABLE_COLUMNS)
 
         # Take the releases and put it back into a dictionary like it was when it was downloaded from PyPi
         for row_dict in rows:
@@ -204,5 +204,5 @@ class PyPiAnalyserSqliteHelper(SQLiteHelper):
         :rtype: list
         """
         rows = self.sql_worker.execute("SELECT * FROM packages WHERE name=?", (package_name,))
-        rows = self._map_data_to_column_names(rows, PACKAGE_TABLE_COLUMNS)
+        rows = self.map_data_to_column_names(rows, PACKAGE_TABLE_COLUMNS)
         return rows[0]

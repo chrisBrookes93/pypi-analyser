@@ -47,7 +47,7 @@ def read_file_lines_into_list(file_path):
 
 def write_list_lines_into_file(file_path, lines, file_mode='w'):
     """
-    Write a list of strings to a file, each one on their own line. OS specific line separator is used
+    Write a list of strings to a file, each one on their own line.
 
     :param file_path: Path to the file
     :type file_path: str
@@ -105,7 +105,7 @@ def order_release_names_fallback(release_dict):
     """
     In Python3 if you compare two versions using LooseVersion where one has a string in, e.g.
     LooseVersion('0.1dev') < LooseVersion('0.1.0')
-    an error is thrown because its trying to compare a string to an int. This is fallback that orders versions by the
+    an error is thrown because its trying to compare a string to an int. This is a fallback that orders versions by the
     upload date of the first file in each release
 
     :param release_dict: Releases to order keys for
@@ -137,7 +137,7 @@ def split_list_into_chunks(full_list, chunk_count):
     :type chunk_count: int
 
     :return: List with chunk_count elements
-    :rtype: lsit
+    :rtype: list
     """
     chunk_size = int(len(full_list) / chunk_count)
     chunks = [full_list[x:x + chunk_size] for x in xrange(0, len(full_list), chunk_size)]

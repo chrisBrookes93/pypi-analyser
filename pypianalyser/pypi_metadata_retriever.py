@@ -97,7 +97,7 @@ class PyPiMetadataRetriever:
             if already_in_db:
                 pypi_set = pypi_set - already_in_db
                 logger.info('Found {} packages already in the DB, removing these from the list. List size is now {}'
-                             .format(len(already_in_db), len(pypi_set)))
+                            .format(len(already_in_db), len(pypi_set)))
 
             pypi_set = sorted(list(pypi_set))
             if self.max_packages and len(pypi_set) > self.max_packages:
@@ -134,13 +134,22 @@ class PyPiMetadataRetriever:
                     self._threads.append(t)
                     t.start()
 
-                for t in self._threads:
-                    t.join()
-            time_diff = datetime.now() - self._start_time
-            logger.info('Runtime: {}, finished processing all packages'.format(time_diff))
+                # Wait for the threads. We use a while loop and .join(100) so that we can still react catch
+                # KeyboardInterrupt. Once a thread has finished it is popped from the list until there are
+                # none left at which point the program closes.
+                while self._threads:
+                    ind0_thread = self._threads[0]
+                    ind0_thread.join(100)
+                    if not ind0_thread.isAlive():
+                        self._threads.pop(0)
+                time_diff = datetime.now() - self._start_time
+                logger.info('Runtime: {}, finished processing all packages'.format(time_diff))
         except KeyboardInterrupt:
-            logger.info('Keyboard interrupt, waiting for threads to finish')
+            # Inform the threads of the shutdown
             self._shutdown = True
+            logger.info('Caught a KeyboardInterrupt event, waiting for threads to shutdown...')
+            # Wait for the threads to finish what they're doing so that the we don't get partial data in the DB for a
+            # package
             for t in self._threads:
                 t.join()
         finally:
@@ -172,7 +181,7 @@ class PyPiMetadataRetriever:
         i = 0
         # Calculate a sensible period to update a locked counter based on the size of the package list. This ensures we
         # don't do an operation that requires obtaining a lock too often.
-        update_period = int(min(5000, max(len(package_list) / 10, 1)))
+        update_period = int(min(1000, max(len(package_list) / 10, 1)))
 
         for package in package_list:
             if self._shutdown:

@@ -29,7 +29,19 @@ class SQLiteHelper(object):
             self.sql_worker.close()
             self.sql_worker = None
 
-    def _map_data_to_column_names(self, row_tuples, column_names):
+    @staticmethod
+    def map_data_to_column_names(row_tuples, column_names):
+        """
+        Maps a list of tuples (table rows) to column names to produde a list of dictionaries
+
+        :param row_tuples: List of tuples
+        :type row_tuples: list
+        :param column_names: Names of the columns
+        :type column_names: list
+
+        :return: List of dicts
+        :rtype: list
+        """
         ret_val = []
         for row in row_tuples:
             ret_val.append(dict(zip(column_names, row)))
