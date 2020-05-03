@@ -44,7 +44,7 @@ CREATE_PACKAGE_CLASSIFIERS_TABLE_SQL = \
     id integer PRIMARY KEY,
     package_id integer NOT NULL,
     classifier_id integer NOT NULL,
-    FOREIGN KEY(package_id) REFERENCES packages(id),
+    FOREIGN KEY(package_id) REFERENCES packages(id) ON DELETE CASCADE,
     FOREIGN KEY(classifier_id) REFERENCES classifier_strings(id));
     """
 PACKAGE_CLASSIFIERS_TABLE_COLUMNS = ["id", "package_id", "classifier_id"]
@@ -66,7 +66,7 @@ CREATE_RELEASE_TABLE_SQL = \
     packagetype text,
     upload_time_iso_8601 text,
     size integer,
-    FOREIGN KEY(package_id) REFERENCES packages(id));
+    FOREIGN KEY(package_id) REFERENCES packages(id) ON DELETE CASCADE);
     """
 PACKAGE_RELEASES_TABLE_COLUMNS = \
     ["id", "package_id", "version", "has_sig", "upload_time", "comment_text", "python_version",

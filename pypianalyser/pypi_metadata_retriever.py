@@ -234,6 +234,8 @@ class PyPiMetadataRetriever:
         :type metadata: dict
         """
         releases = metadata['releases'] or {}
+        # Remove any releases that do not contain any files
+        releases = dict([(k,v) for k, v in releases.items() if releases[k]])
 
         # In Py3 by default we can't rely on the order of the release dictionary so order the releases using an
         # OrderedDict
@@ -269,7 +271,7 @@ class PyPiMetadataRetriever:
         with self._progress_counter_lock:
             self._progress_counter += number_to_add
             since_last_update = datetime.now() - self._last_update_time
-            if since_last_update.total_seconds() > 60:
+            if since_last_update.total_seconds() > 30:
                 run_time = datetime.now() - self._start_time
                 logger.info('Runtime: {}, processed {}/{}'.format(run_time, self._progress_counter,
                                                                   len(self.package_list)))
